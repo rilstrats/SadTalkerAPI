@@ -1,8 +1,7 @@
 version: '3.8'
 services:
   sadtalker:
-    image: paidax/faster-sadtalker-api:0.1.3
-    container_name: sadtalker
+    build: .
     deploy:
       resources:
         reservations:
@@ -11,16 +10,27 @@ services:
               count: all
               capabilities: [gpu]
     volumes:
-      - ./checkpoints:/home/SadTalker/checkpoints
-      - ./gfpgan/weights:/home/SadTalker/gfpgan/weights
-      - ./results:/home/SadTalker/results
+      - ./checkpoints:/app/checkpoints
+      - ./gfpgan/weights:/app/gfpgan/weights
+    develop:
+      watch:
+        - action: rebuild
+          path: ./requirements.txt
+          target: /app/requirements.txt
+        - action: sync
+          path: ./src
+          target: /app/src
+        - action: sync
+          path: ./main.py
+          target: /app/main.py
+        - action: sync
+          path: ./images
+          target: /app/images
     ports:
       - 10364:10364
     environment:
       - TTS_SERVER=http://tts:9566/tts
-    command: uvicorn main:app --reload --port 10364 --host 0.0.0.0
   tts:
-    container_name: tts
     image: paidax/tts_modelscope:0.1.3
     ports:
       - 9566:9566

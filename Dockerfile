@@ -1,28 +1,24 @@
-FROM paidax/dev-containers:cuda11.6-py3.8
+FROM nvidia/cuda:11.6.2-runtime-ubuntu20.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt update -y && \
-    apt install -y \
-    ffmpeg && \
-    apt clean && \
-    rm -rf /var/lib/apt/lists/*
+RUN apt update -y
+RUN apt install -y python3 python-is-python3 pip ffmpeg
+RUN apt clean && rm -rf /var/lib/apt/lists/*
 
-RUN git clone https://github.com/Winfredy/SadTalker.git && \
-    pip install torch==1.12.1+cu113 torchvision==0.13.1+cu113 torchaudio==0.12.1 --extra-index-url https://download.pytorch.org/whl/cu113 && \
-    cd SadTalker && \
-    mkdir checkpoints && \
-    mkdir -p gfpgan/weights && \
-    pip install -r requirements.txt && \
-    pip install \ 
-    fastapi[all] \
-    onnxruntime-gpu \
-    loguru && \
-    rm -rf /root/.cache/pip/*  # 清除pip缓存
+RUN pip install torch==1.13.1+cu116 torchvision==0.14.1+cu116 torchaudio==0.13.1 \
+    --extra-index-url https://download.pytorch.org/whl/cu116
 
-RUN pip install httpcore==0.15
+RUN pip install flatbuffers numpy packaging protobuf sympy onnxruntime-gpu==1.14
 
-WORKDIR /home/SadTalker
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install -r requirements.txt
 
-COPY main.py sadtalker_default.jpeg ./
-COPY src/ src/
+RUN pip install fastapi[all] loguru httpcore==0.15
+RUN pip install ffprobe-python
+RUN rm -rf /root/.cache/pip/*
+
+COPY . .
+
+CMD ["uvicorn", "main:app", "--reload", "--port", "10364", "--host", "0.0.0.0"]
