@@ -76,7 +76,6 @@ class GFPGANFaceAugment:
         ort_outs = self.ort_session.run(None, ort_inputs)
         output = ort_outs[0][0]
         output, inv_soft_mask = self.post_process(output, height, width)
-        print('infer time:',timeit.default_timer()-t)  
         output = output.astype(np.uint8)
         return output, inv_soft_mask
         

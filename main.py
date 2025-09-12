@@ -44,7 +44,6 @@ async def predict_image(items:Words):
     try:
         tts_json = json.dumps({"text": items.words,"model_id": "zhisha"})
         tts_result = requests.post(url=tts_service,data=tts_json).json()["wav"]
-        print(tts_result)
         audio_data = base64.b64decode(tts_result)
         audio_path = "/tmp/001.wav"
         with open(audio_path, "wb") as audio_file:
