@@ -37,6 +37,7 @@ class Words(BaseModel):
 @app.post("/pipeline")
 async def predict_image(items:Words):
     save_dir = os.path.join("/tmp", dt.now().isoformat())
+    start_time = time()
     """
     从语音服务器获取语音内容
     """
@@ -78,11 +79,13 @@ async def predict_image(items:Words):
     response = {
             "video_base64": video_data
         }
-        
+    total_time = time() - start_time
+    video_length = FFProbe(video_path).streams[0].duration
+    print(f"Took {total_time} seconds to create a {video_length} second video")
     return response
-    
-    
-        
+
+
+
 @app.get("/health")
 async def health_check():
     try:
