@@ -19,6 +19,10 @@ RUN pip install fastapi[all] loguru httpcore==0.15
 RUN pip install ffprobe-python
 RUN rm -rf /root/.cache/pip/*
 
-COPY . .
+COPY checkpoints checkpoints
+COPY gfpgan gfpgan
+COPY images images
+COPY src src
+COPY main.py .
 
 CMD ["uvicorn", "main:app", "--reload", "--port", "10364", "--host", "0.0.0.0"]

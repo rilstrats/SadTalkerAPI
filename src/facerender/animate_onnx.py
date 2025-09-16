@@ -319,6 +319,10 @@ class AnimateFromCoeff():
         word = word1[start_time:end_time]
         word.export(new_audio_path, format="wav")
 
+        # full模式图像回贴
+        video_name_full = x['video_name']  + '_full.mp4'
+        full_video_path = os.path.join(video_save_dir, video_name_full)
+
         if enhancer:
             video_name_enhancer = x['video_name']  + '_enhanced.mp4'
             enhanced_path = os.path.join(video_save_dir, 'temp_'+video_name_enhancer)
@@ -331,15 +335,15 @@ class AnimateFromCoeff():
             except:
                 enhanced_images_gen_with_len = enhancer_list(path, method=enhancer, bg_upsampler=background_enhancer)
                 imageio.mimsave(enhanced_path, enhanced_images_gen_with_len, fps=float(25))
-            
+
             save_video_with_watermark(enhanced_path, new_audio_path, av_path_enhancer, watermark= False)
             print(f'The generated video is named {video_save_dir}/{video_name_enhancer}')
             os.remove(enhanced_path)
+            paste_pic(av_path_enhancer, pic_path, crop_info, new_audio_path, full_video_path, extended_crop= True if 'ext' in preprocess.lower() else False)
 
-        # full模式图像回贴
-        video_name_full = x['video_name']  + '_full.mp4'
-        full_video_path = os.path.join(video_save_dir, video_name_full)
-        paste_pic(av_path_enhancer, pic_path, crop_info, new_audio_path, full_video_path, extended_crop= True if 'ext' in preprocess.lower() else False)
+        else:
+            paste_pic(path, pic_path, crop_info, new_audio_path, full_video_path, extended_crop= True if 'ext' in preprocess.lower() else False)
+
         print(f'The generated video is named {video_save_dir}/{video_name_full}') 
         return_path = full_video_path
 

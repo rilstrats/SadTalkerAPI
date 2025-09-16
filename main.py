@@ -23,6 +23,8 @@ tts_service = os.getenv("TTS_SERVER")
 pic_path ="./images/1.png"
 facerender_batch_size = 1
 sadtalker_paths = init_path("./checkpoints", os.path.join("/app", 'src/config'), "256", False, "full")
+enhancer = None
+'''Available options are None or "gfpgan"'''
 
 preprocess_model = CropAndExtract(sadtalker_paths, "cuda")
 audio_to_coeff = Audio2Coeff(sadtalker_paths, "cuda")
@@ -72,7 +74,7 @@ async def predict_image(items:Words):
                                 facerender_batch_size, None, None, None,
                                 expression_scale=1, still_mode=True, preprocess="full")
     video_path = animate_from_coeff.generate_deploy(data, save_dir, pic_path, crop_info, \
-                                enhancer="gfpgan", background_enhancer=None, preprocess="full")
+                                enhancer=enhancer, background_enhancer=None, preprocess="full")
     with open(video_path, "rb") as file:
             video_data = base64.b64encode(file.read()).decode("utf-8")
     response = {
