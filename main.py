@@ -32,21 +32,24 @@ animate_from_coeff = AnimateFromCoeff(sadtalker_paths, "cuda")
 
 app = FastAPI()
 
-class Words(BaseModel):
+class PostData(BaseModel):
     words: str
+    audio_base64: str | None = None
 
 
 @app.post("/pipeline")
-async def predict_image(items:Words):
+async def predict_image(post_data: PostData):
     save_dir = os.path.join("/tmp", dt.now().isoformat())
-    start_time = time()
     """
     从语音服务器获取语音内容
     """
     try:
-        tts_json = json.dumps({"text": items.words,"model_id": "zhisha"})
-        tts_result = requests.post(url=tts_service,data=tts_json).json()["wav"]
-        audio_data = base64.b64decode(tts_result)
+        if post_data.audio_base64:
+            audio_data = base64.b64decode(post_data.audio_base64)
+        else:
+            tts_json = json.dumps({"text": post_data.words,"model_id": "zhisha"})
+            tts_result = requests.post(url=tts_service,data=tts_json).json()["wav"]
+            audio_data = base64.b64decode(tts_result)
         audio_path = "/tmp/001.wav"
         with open(audio_path, "wb") as audio_file:
             audio_file.write(audio_data)
@@ -62,6 +65,7 @@ async def predict_image(items:Words):
         json_data = json_data.replace("'", '"')
         return json_data
 
+    start_time = time()
     first_frame_dir = os.path.join(save_dir, 'first_frame_dir')
     os.makedirs(first_frame_dir, exist_ok=True)
     first_coeff_path, crop_pic_path, crop_info =  preprocess_model.generate(pic_path, first_frame_dir, "full", source_image_flag=True)
