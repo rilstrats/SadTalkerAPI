@@ -1,23 +1,14 @@
-FROM nvidia/cuda:11.6.2-runtime-ubuntu20.04
+FROM pytorch/pytorch:2.7.1-cuda12.8-cudnn9-runtime
 
-ENV DEBIAN_FRONTEND=noninteractive
-
-RUN apt update -y
-RUN apt install -y python3 python-is-python3 pip ffmpeg
-RUN apt clean && rm -rf /var/lib/apt/lists/*
-
-RUN pip install torch==1.13.1+cu116 torchvision==0.14.1+cu116 torchaudio==0.13.1 \
-    --extra-index-url https://download.pytorch.org/whl/cu116
-
-RUN pip install flatbuffers numpy packaging protobuf sympy onnxruntime-gpu==1.14
+RUN apt-get -qq update && \
+    apt-get -qq install --no-install-recommends ffmpeg && \
+    apt-get -qq clean && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 COPY requirements.txt .
-RUN pip install -r requirements.txt
-
-RUN pip install fastapi[all] loguru httpcore==0.15
-RUN pip install ffprobe-python
-RUN rm -rf /root/.cache/pip/*
+RUN pip install --quiet -r requirements.txt && \
+    rm -rf /root/.cache/pip/*
 
 COPY checkpoints checkpoints
 COPY gfpgan gfpgan
